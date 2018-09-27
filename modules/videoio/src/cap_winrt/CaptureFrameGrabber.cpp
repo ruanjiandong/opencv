@@ -94,10 +94,10 @@ Media::CaptureFrameGrabber::~CaptureFrameGrabber()
 
 void Media::CaptureFrameGrabber::ShowCameraSettings()
 {
-#if WINAPI_FAMILY!=WINAPI_FAMILY_PHONE_APP
+#if (WINAPI_FAMILY!=WINAPI_FAMILY_PHONE_APP) && (WINAPI_FAMILY!=WINAPI_FAMILY_APP)
     if (_state == State::Started)
     {
-        CameraOptionsUI::Show(_capture.Get());
+        CameraOptionsUI::Show(_capture.Get()); // TODO: Turn it on again in UWP mode by adding reference to UWP Desktop Extensions
     }
 #endif
 }
