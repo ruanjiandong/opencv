@@ -65,7 +65,7 @@ endif()
 
 ocv_module_include_directories(${fw_inc} ${CMAKE_CURRENT_LIST_DIR}/src/ocl4dnn/include ${OPENCL_INCLUDE_DIRS})
 ocv_glob_module_sources(SOURCES ${fw_srcs})
-ocv_create_module(libprotobuf ${LAPACK_LIBRARIES})
+ocv_create_module()
 ocv_add_samples()
 ocv_add_accuracy_tests()
 ocv_add_perf_tests()
