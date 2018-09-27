@@ -1202,6 +1202,9 @@ CVAPI(void)  cvDrawContours( CvArr *img, CvSeq* contour,
 
 /** @} */
 
+#ifndef CV_RGB
+#define CV_RGB(r,g,b) cvScalar(b, g, r, 0)
+#endif
 #ifdef __cplusplus
 }
 #endif
