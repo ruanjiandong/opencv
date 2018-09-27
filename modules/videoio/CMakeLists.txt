@@ -265,39 +265,6 @@ endif()
 
 ocv_warnings_disable(CMAKE_CXX_FLAGS -Wno-deprecated-declarations)
 
-if(WIN32 AND HAVE_FFMPEG_WRAPPER)
-  #copy ffmpeg dll to the output folder
-  if(MSVC64 OR MINGW64)
-    set(FFMPEG_SUFFIX _64)
-  endif()
-
-  set(ffmpeg_dir "${OpenCV_BINARY_DIR}/3rdparty/ffmpeg")
-  set(ffmpeg_bare_name "opencv_ffmpeg${FFMPEG_SUFFIX}.dll")
-  set(ffmpeg_bare_name_ver "opencv_ffmpeg${OPENCV_DLLVERSION}${FFMPEG_SUFFIX}.dll")
-  set(ffmpeg_path "${ffmpeg_dir}/${ffmpeg_bare_name}")
-
-  if(MSVC_IDE)
-    add_custom_command(TARGET ${the_module} POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ffmpeg_path}" "${EXECUTABLE_OUTPUT_PATH}/Release/${ffmpeg_bare_name_ver}"
-                       COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ffmpeg_path}" "${EXECUTABLE_OUTPUT_PATH}/Debug/${ffmpeg_bare_name_ver}"
-                       COMMENT "Copying ${ffmpeg_path} to the output directory")
-  elseif(MSVC AND (CMAKE_GENERATOR MATCHES "Visual"))
-    add_custom_command(TARGET ${the_module} POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ffmpeg_path}" "${EXECUTABLE_OUTPUT_PATH}/${CMAKE_BUILD_TYPE}/${ffmpeg_bare_name_ver}"
-                       COMMENT "Copying ${ffmpeg_path} to the output directory")
-  else()
-    add_custom_command(TARGET ${the_module} POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ffmpeg_path}" "${EXECUTABLE_OUTPUT_PATH}/${ffmpeg_bare_name_ver}"
-                       COMMENT "Copying ${ffmpeg_path} to the output directory")
-  endif()
-
-  install(FILES "${ffmpeg_path}" DESTINATION ${OPENCV_BIN_INSTALL_PATH} COMPONENT libs RENAME "${ffmpeg_bare_name_ver}")
-
-  if(INSTALL_CREATE_DISTRIB)
-    install(FILES "${ffmpeg_dir}/opencv_ffmpeg.dll" DESTINATION "bin/" COMPONENT libs RENAME "opencv_ffmpeg${OPENCV_DLLVERSION}.dll")
-    install(FILES "${ffmpeg_dir}/opencv_ffmpeg_64.dll" DESTINATION "bin/" COMPONENT libs RENAME "opencv_ffmpeg${OPENCV_DLLVERSION}_64.dll")
-  endif()
-endif()
 endmacro()
 
 if(NOT BUILD_opencv_world)
