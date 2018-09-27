@@ -307,6 +307,10 @@ OCV_OPTION(INSTALL_PYTHON_EXAMPLES  "Install Python examples"   OFF )
 OCV_OPTION(INSTALL_ANDROID_EXAMPLES "Install Android examples"  OFF IF ANDROID )
 OCV_OPTION(INSTALL_TO_MANGLED_PATHS "Enables mangled install paths, that help with side by side installs." OFF IF (UNIX AND NOT ANDROID AND NOT APPLE_FRAMEWORK AND BUILD_SHARED_LIBS) )
 OCV_OPTION(INSTALL_TESTS            "Install accuracy and performance test binaries and test data" OFF)
+OCV_OPTION(INSTALL_HEADERS          "Install header files"      ON)
+OCV_OPTION(INSTALL_LICENSE          "Install license file"      ON)
+OCV_OPTION(INSTALL_OTHER            "Install other files"       ON)
+OCV_OPTION(INSTALL_FORCE_UNIX_PATHS "Force unix-style installation" OFF)
 
 # OpenCV build options
 # ===================================================
@@ -335,7 +339,7 @@ OCV_OPTION(CV_ENABLE_INTRINSICS       "Use intrinsic-based optimized code" ON )
 OCV_OPTION(CV_DISABLE_OPTIMIZATION    "Disable explicit optimized code (dispatched code/intrinsics/loop unrolling/etc)" OFF )
 OCV_OPTION(CV_TRACE                   "Enable OpenCV code trace" ON)
 
-OCV_OPTION(ENABLE_PYLINT              "Add target with Pylint checks"                            (${BUILD_DOCS} OR ${BUILD_EXAMPLES}) IF (NOT CMAKE_CROSSCOMPILING AND NOT APPLE_FRAMEWORK) )
+OCV_OPTION(ENABLE_PYLINT              "Add target with Pylint checks"                            (BUILD_DOCS OR BUILD_EXAMPLES) IF (NOT CMAKE_CROSSCOMPILING AND NOT APPLE_FRAMEWORK) )
 
 if(ENABLE_IMPL_COLLECTION)
   add_definitions(-DCV_COLLECT_IMPL_DATA)
@@ -372,7 +376,9 @@ else()
 endif()
 
 if(WIN32 AND CMAKE_HOST_SYSTEM_NAME MATCHES Windows)
-  if(DEFINED OpenCV_RUNTIME AND DEFINED OpenCV_ARCH)
+  if(DEFINED OpenCV_DISABLE_ARCH_PATH)
+    ocv_update(OpenCV_INSTALL_BINARIES_PREFIX "")
+  elseif(DEFINED OpenCV_RUNTIME AND DEFINED OpenCV_ARCH)
     ocv_update(OpenCV_INSTALL_BINARIES_PREFIX "${OpenCV_ARCH}/${OpenCV_RUNTIME}/")
   else()
     message(STATUS "Can't detect runtime and/or arch")
@@ -427,12 +433,8 @@ else()
   ocv_update(3P_LIBRARY_OUTPUT_PATH      "${OpenCV_BINARY_DIR}/3rdparty/lib${LIB_SUFFIX}")
 
   if(WIN32 AND CMAKE_HOST_SYSTEM_NAME MATCHES Windows)
-    if(OpenCV_STATIC)
-      ocv_update(OPENCV_LIB_INSTALL_PATH   "${OpenCV_INSTALL_BINARIES_PREFIX}staticlib${LIB_SUFFIX}")
-    else()
-      ocv_update(OPENCV_LIB_INSTALL_PATH   "${OpenCV_INSTALL_BINARIES_PREFIX}lib${LIB_SUFFIX}")
-    endif()
-    ocv_update(OPENCV_3P_LIB_INSTALL_PATH  "${OpenCV_INSTALL_BINARIES_PREFIX}staticlib${LIB_SUFFIX}")
+    ocv_update(OPENCV_LIB_INSTALL_PATH     "${OpenCV_INSTALL_BINARIES_PREFIX}lib${LIB_SUFFIX}")
+    ocv_update(OPENCV_3P_LIB_INSTALL_PATH  "${OpenCV_INSTALL_BINARIES_PREFIX}lib${LIB_SUFFIX}")
     ocv_update(OPENCV_SAMPLES_SRC_INSTALL_PATH    samples)
     ocv_update(OPENCV_JAR_INSTALL_PATH java)
     ocv_update(OPENCV_OTHER_INSTALL_PATH   etc)
@@ -895,7 +897,7 @@ if(NOT OPENCV_LICENSE_FILE)
 endif()
 
 # for UNIX it does not make sense as LICENSE and readme will be part of the package automatically
-if(ANDROID OR NOT UNIX)
+if(ANDROID OR NOT UNIX AND INSTALL_LICENSE)
   install(FILES ${OPENCV_LICENSE_FILE}
         PERMISSIONS OWNER_READ GROUP_READ WORLD_READ
         DESTINATION ./ COMPONENT libs)
