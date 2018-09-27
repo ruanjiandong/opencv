@@ -213,38 +213,28 @@ endif(WITH_XIMEA)
 # --- FFMPEG ---
 ocv_clear_vars(HAVE_FFMPEG)
 if(WITH_FFMPEG)
-  if(WIN32 AND NOT ARM)
-    include("${OpenCV_SOURCE_DIR}/3rdparty/ffmpeg/ffmpeg.cmake")
-    download_win_ffmpeg(FFMPEG_CMAKE_SCRIPT)
-    if(FFMPEG_CMAKE_SCRIPT)
-      set(HAVE_FFMPEG TRUE)
-      include("${FFMPEG_CMAKE_SCRIPT}")
-    endif()
-  elseif(PKG_CONFIG_FOUND)
-    ocv_check_modules(FFMPEG libavcodec libavformat libavutil libswscale)
-    ocv_check_modules(FFMPEG_libavresample libavresample)
-    if(FFMPEG_libavresample_FOUND)
-      ocv_append_build_options(FFMPEG FFMPEG_libavresample)
-    endif()
-    if(HAVE_FFMPEG)
-      try_compile(__VALID_FFMPEG
-          "${OpenCV_BINARY_DIR}"
-          "${OpenCV_SOURCE_DIR}/cmake/checks/ffmpeg_test.cpp"
-          CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${FFMPEG_INCLUDE_DIRS}"
-                      "-DLINK_DIRECTORIES:STRING=${FFMPEG_LIBRARY_DIRS}"
-                      "-DLINK_LIBRARIES:STRING=${FFMPEG_LIBRARIES}"
-          OUTPUT_VARIABLE TRY_OUT
-      )
-      if(NOT __VALID_FFMPEG)
-        #message(FATAL_ERROR "FFMPEG: test check build log:\n${TRY_OUT}")
-        message(STATUS "WARNING: Can't build ffmpeg test code")
-        set(HAVE_FFMPEG FALSE)
-      else()
-        ocv_append_build_options(VIDEOIO FFMPEG)
-      endif()
-    endif()
+  find_path(FFMPEG_INCLUDE_DIRS NAMES libavcodec/avcodec.h)
+  unset(FFMPEG_LIBRARIES)
+  foreach(FFMPEG_SUBLIBRARY avformat avdevice avcodec avutil swscale)
+    find_library(FFMPEG_lib${FFMPEG_SUBLIBRARY}_LIBRARY NAMES ${FFMPEG_SUBLIBRARY})
+    list(APPEND FFMPEG_LIBRARIES ${FFMPEG_lib${FFMPEG_SUBLIBRARY}_LIBRARY})
+  endforeach()
+  list(APPEND FFMPEG_LIBRARIES wsock32 ws2_32 Secur32)
+  try_compile(__VALID_FFMPEG
+      "${OpenCV_BINARY_DIR}"
+      "${OpenCV_SOURCE_DIR}/cmake/checks/ffmpeg_test.cpp"
+      CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${FFMPEG_INCLUDE_DIRS}"
+                  "-DLINK_DIRECTORIES:STRING=${FFMPEG_LIBRARY_DIRS}"
+                  "-DLINK_LIBRARIES:STRING=${FFMPEG_LIBRARIES}"
+      OUTPUT_VARIABLE TRY_OUT
+  )
+  if(NOT __VALID_FFMPEG)
+    #message(FATAL_ERROR "FFMPEG: test check build log:\n${TRY_OUT}")
+    message(STATUS "WARNING: Can't build ffmpeg test code")
+    set(HAVE_FFMPEG FALSE)
   else()
-    message(STATUS "Can't find ffmpeg - 'pkg-config' utility is missing")
+    set(HAVE_FFMPEG TRUE)
+    ocv_append_build_options(VIDEOIO FFMPEG)
   endif()
 endif(WITH_FFMPEG)
 

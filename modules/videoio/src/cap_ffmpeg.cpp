@@ -43,11 +43,7 @@
 
 #include <string>
 
-#if defined HAVE_FFMPEG && !defined _WIN32
 #include "cap_ffmpeg_impl.hpp"
-#else
-#include "cap_ffmpeg_api.hpp"
-#endif
 
 static CvCreateFileCapture_Plugin icvCreateFileCapture_FFMPEG_p = 0;
 static CvReleaseCapture_Plugin icvReleaseCapture_FFMPEG_p = 0;
@@ -61,19 +57,6 @@ static CvWriteFrame_Plugin icvWriteFrame_FFMPEG_p = 0;
 
 static cv::Mutex _icvInitFFMPEG_mutex;
 
-#if defined _WIN32
-static const HMODULE cv_GetCurrentModule()
-{
-    HMODULE h = 0;
-#if _WIN32_WINNT >= 0x0501
-    ::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-        reinterpret_cast<LPCTSTR>(cv_GetCurrentModule),
-        &h);
-#endif
-    return h;
-}
-#endif
-
 class icvInitFFMPEG
 {
 public:
@@ -84,22 +67,9 @@ public:
     }
 
 private:
-    #if defined _WIN32
-    HMODULE icvFFOpenCV;
-
-    ~icvInitFFMPEG()
-    {
-        if (icvFFOpenCV)
-        {
-            FreeLibrary(icvFFOpenCV);
-            icvFFOpenCV = 0;
-        }
-    }
-    #endif
-
     icvInitFFMPEG()
     {
-    #if defined _WIN32
+    #if 0
         const wchar_t* module_name_ = L"opencv_ffmpeg"
             CVAUX_STRW(CV_MAJOR_VERSION) CVAUX_STRW(CV_MINOR_VERSION) CVAUX_STRW(CV_SUBMINOR_VERSION)
         #if (defined _MSC_VER && defined _M_X64) || (defined __GNUC__ && defined __x86_64__)
