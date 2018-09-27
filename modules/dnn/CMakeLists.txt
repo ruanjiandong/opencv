@@ -78,7 +78,7 @@ endif()
 
 set(include_dirs ${fw_inc})
 set(sources_options "")
-set(libs libprotobuf ${LAPACK_LIBRARIES})
+set(libs ${LAPACK_LIBRARIES})
 if(OPENCV_DNN_OPENCL AND HAVE_OPENCL)
   list(APPEND include_dirs ${OPENCL_INCLUDE_DIRS})
 else()
